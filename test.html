@@ -4,8 +4,10 @@
     <meta charset='utf-8' />
     <title>Display a map</title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.0.0/mapbox-gl.js'></script>
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.0.0/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.0.0/mapbox-gl.js'></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+
     <style>
         body { margin:0; padding:0; }
         #map { position:absolute; top:0; bottom:0; width:100%; }
@@ -14,14 +16,101 @@
 <body>
 <div id="map"></div>
 <script>
-    //import mapboxgl from 'mapbox-gl';
+    //const mapboxgl = require('mapbox-gl/src/index.js');
     mapboxgl.accessToken = 'pk.eyJ1IjoiY3V0YmVyMzMiLCJhIjoiY2p4Y3lmejM5MDBmYjN6b2N0dW5kemd0eCJ9.w0qOKr90XDitOx-JeQ829A';
-    var map = new mapboxgl.Map({
+    const map = new mapboxgl.Map({
         container: 'map', // container id
-        style: 'mapbox://styles/mapbox/streets-v11', // stylesheet location
-        center: [-74.50, 40], // starting position [lng, lat]
-        zoom: 2, // starting zoom
+        style: {
+            "version": 8,
+            "sources": {
+                "raster-tiles": {
+                    "type": "raster",
+                    "tiles": ["https://maptiles.meteoblue.com/styles/terrain-en/{z}/{x}/{y}.png"],
+                    "tileSize": 256,
+                },
+                "sat-tiles": {
+                    "type": "raster",
+                    "tiles": ["https://static.meteoblue.com/pub/satellite/20190626/1015/{z}/{x}/{y}.jpg"],
+                    "tileSize": 512,
+                }
+            },
+            "layers": [
+                {
+                    "id": "simple-tiles",
+                    "type": "raster",
+                    "source": "raster-tiles",
+                    "minzoom": 0,
+                    "maxzoom": 22
+                },
+                {
+                    "id": "sat-tiles",
+                    "type": "raster",
+                    "source": "sat-tiles",
+                    "minzoom": 0,
+                    "maxzoom": 22,
+                    "zoomOffset": -1
+                }]
+        },
+        center: [10, 51], // starting position [lng, lat]
+        zoom: 0, // starting zoom
+
     });
+
+    //var language = new MapboxLanguage();
+    map.addControl(new mapboxgl.NavigationControl());
+
+    var picture = "https://static.meteoblue.com/pub/satellite/{year}{month}{day}/{hour}{minute}/{z}/{x}/{y}.jpg";
+
+    var mbUrl = 'https://static.meteoblue.com/pub/satellite/SAT_COMPOSITE.json';
+    function getJson(url) {
+        return fetch(url)
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(mbJson) {
+                jsonFile = mbJson;
+
+                //Get the tiles
+                str2 = jsonFile["tiles"][0];
+                // Get the date from current
+                var date = new Date(jsonFile["time"]["current"]*1000);
+                var year = date.getFullYear();
+                var month = date.getMonth();
+                if (month.toString().length<2) {
+                    month = "0"+month;
+                }
+                var day = date.getDay();
+                if (day.toString().length<2) {
+                    day = "0"+day;
+                }
+                var hour = date.getHours();
+                if (hour.toString().length<2) {
+                    hour = "0"+hour;
+                }
+                var minute = date.getMinutes();
+                if (minute.toString().length<2) {
+                    minute = "0"+minute;
+                }
+
+                //Replace the date placeholders with the real date
+                var placeholders = ["{year}", "{month}", "{day}", "{hour}", "{minute}"];
+                var fillers = [year, month, day, hour, minute];
+                var url2 = "",url3 = "",url4 = "",url5 = "",url6 = "";
+                var urls = [str2,url2,url3,url4,url5,url6];
+
+                for (var i = 0; i<=fillers.length; i++) {
+                    urls[i+1] = urls[i].replace(placeholders[i], fillers[i]);
+                }
+                console.log(urls[5]);
+                return url5;
+            });
+
+    }
+
+    getJson(mbUrl);
+
+
+
 </script>
 </body>
 </html>

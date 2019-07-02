@@ -80,7 +80,7 @@ export class Layer {
                     }
                     days.push(day);
 
-                    var hour = date.getHours() - 2;
+                    var hour = date.getHours();
                     if (hour.toString().length < 2) {
                         hour = "0" + hour;
                     }
@@ -96,7 +96,7 @@ export class Layer {
                 //Replace the date placeholders with the real date
                 let currentImage = 0;
 
-                console.log(urls[5]);
+                //console.log(urls[5]);
 
                 //set Map Zoom Settings
                 let minZoom = jsonFile["minzoom"];
@@ -114,23 +114,6 @@ export class Layer {
                 map.setMaxBounds(maxBounds);
 
 
-                map.addSource("sat-tiles", {
-                    "type": "raster",
-                    "tiles": [urls[5]],
-                    "tileSize": 512,
-                });
-
-                map.addLayer({
-                    "id": "sat-tiles",
-                    "type": "raster",
-                    "source": "sat-tiles",
-                    "minzoom": 0,
-                    "maxzoom": 22,
-                    "zoomOffset": -1
-                });
-
-
-
                 setInterval(function () {
                     currentImage = (currentImage + 1) % years.length;
 
@@ -143,10 +126,29 @@ export class Layer {
                         urls[i + 1] = urls[i].replace(placeholders[i], fillers[i]);
                     }
 
-                    map.getSource("sat-tiles").setTiles()
+                    if (map.getLayer("sat-tiles")) {
+                        map.removeLayer("sat-tiles").removeSource("sat-tiles");
+                    }
 
+                    map.addSource("sat-tiles", {
+                        "type": "raster",
+                        "tiles": [urls[5]],
+                        "tileSize": 512,
+                    });
 
-                }, 200);
+                    map.addLayer({
+                        "id": "sat-tiles",
+                        "type": "raster",
+                        "source": "sat-tiles",
+                        "minzoom": 0,
+                        "maxzoom": 22,
+                    });
+
+                   // map.getSource("sat-tiles").setTiles()
+
+                    console.log(urls[5]);
+
+                }, 3000);
 
 
                 return url5;

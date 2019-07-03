@@ -62,9 +62,9 @@ export class Layer {
                 let first = jsonFile["time"]["first"];
                 let last = jsonFile["time"]["last"];
                 let interval = jsonFile["time"]["interval"];
-                console.log(first,last,interval);
 
                 for (var o = first; o <= last && (o-first)%interval==0; o=o+interval) {
+
                     var date = new Date(o*1000);
                     years.push(date.getFullYear());
 
@@ -94,7 +94,6 @@ export class Layer {
                 }
 
                 //Replace the date placeholders with the real date
-                let currentImage = 0;
 
                 //console.log(urls[5]);
 
@@ -113,23 +112,12 @@ export class Layer {
                 let maxBounds = [boundsSW,boundsNE];
                 map.setMaxBounds(maxBounds);
 
+                let currentImage = 0;
 
-                setInterval(function () {
-                    currentImage = (currentImage + 1) % years.length;
-
-                    var placeholders = ["{year}", "{month}", "{day}", "{hour}", "{minute}"];
-                    var fillers = [years[currentImage], months[currentImage], days[currentImage], hours[currentImage], minutes[currentImage]];
-                    var url2 = "", url3 = "", url4 = "", url5 = "", url6 = "";
-                    var urls = [str2, url2, url3, url4, url5, url6];
-
-                    for (var i = 0; i <= fillers.length; i++) {
-                        urls[i + 1] = urls[i].replace(placeholders[i], fillers[i]);
+                function loadTiles(filler, placeholder, urls) {
+                    for (let i = 0; i <= filler.length; i++) {
+                        urls[i + 1] = urls[i].replace(placeholder[i], filler[i]);
                     }
-
-                    if (map.getLayer("sat-tiles")) {
-                        map.removeLayer("sat-tiles").removeSource("sat-tiles");
-                    }
-
                     map.addSource("sat-tiles", {
                         "type": "raster",
                         "tiles": [urls[5]],
@@ -140,15 +128,66 @@ export class Layer {
                         "id": "sat-tiles",
                         "type": "raster",
                         "source": "sat-tiles",
-                        "minzoom": 0,
-                        "maxzoom": 22,
+                        "minzoom": minZoom,
+                        "maxzoom": maxZoom,
+                    });
+                }
+
+                function loadTiles2(filler, placeholder, urls) {
+                    for (let i = 0; i <= filler.length; i++) {
+                        urls[i + 1] = urls[i].replace(placeholder[i], filler[i]);
+                    }
+
+                    map.addSource("sat-tiles2", {
+                        "type": "raster",
+                        "tiles": [urls[5]],
+                        "tileSize": 512,
                     });
 
-                   // map.getSource("sat-tiles").setTiles()
+                    map.addLayer({
+                        "id": "sat-tiles2",
+                        "type": "raster",
+                        "source": "sat-tiles2",
+                        "minzoom": minZoom,
+                        "maxzoom": maxZoom,
+                    });
+                }
 
-                    console.log(urls[5]);
+                setInterval(function () {
 
-                }, 3000);
+                    currentImage = (currentImage + 1) % years.length;
+
+                    let placeholders = ["{year}", "{month}", "{day}", "{hour}", "{minute}"];
+                    let fillers = [years[currentImage], months[currentImage], days[currentImage], hours[currentImage], minutes[currentImage]];
+                    let nextFillers = [years[currentImage+1], months[currentImage+1], days[currentImage+1], hours[currentImage+1], minutes[currentImage+1]];
+                    let url2 = "", url3 = "", url4 = "", url5 = "", url6 = "";
+                    let urls = [str2, url2, url3, url4, url5, url6];
+
+
+                    if (map.getLayer("sat-tiles")) {
+                        if (map.getLayer("sat-tiles2")) {
+                            map.moveLayer("sat-tiles2", "sat-tiles");
+                            map.removeLayer("sat-tiles").removeSource("sat-tiles");
+                            loadTiles(fillers, placeholders, urls);
+                            map.moveLayer("sat-tiles", "sat-tiles2");
+                            map.setLayoutProperty("sat-tiles2", 'visibility', 'none');
+                            if (map.getLayer("sat-tiles") && map.getLayer("sat-tiles2")) {
+                                map.removeLayer("sat-tiles2").removeSource("sat-tiles2");
+                                loadTiles2(nextFillers, placeholders, urls);
+                            } else {
+                                loadTiles2(nextFillers,placeholders,urls);
+                            }
+                        } else {
+                            loadTiles2(nextFillers, placeholders, urls);
+                        }
+                    } else {
+                       loadTiles(fillers, placeholders, urls);
+                       loadTiles2(nextFillers, placeholders, urls);
+                    }
+
+
+
+                }, 1000);
 
 
                 return url5;

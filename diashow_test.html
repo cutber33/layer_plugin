@@ -48,7 +48,7 @@
             }
         },
         center: [10, 51], // starting position [lng, lat]
-         // starting zoom
+        // starting zoom
 
     });
 
@@ -56,7 +56,7 @@
 
     var mbUrl = 'https://static.meteoblue.com/pub/satellite/SAT_COMPOSITE.json';
 
-    const ts = new Timeslider(map, mbUrl);
+    const layer = new Layer(mbUrl, map);
     //const layer = new Layer(mbUrl, map);
 
 </script>

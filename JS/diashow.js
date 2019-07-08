@@ -1,43 +1,3 @@
-//const mapboxgl = require('mapbox-gl/src/index.js');
-/*
-mapboxgl.accessToken = 'pk.eyJ1IjoiY3V0YmVyMzMiLCJhIjoiY2p4Y3lmejM5MDBmYjN6b2N0dW5kemd0eCJ9.w0qOKr90XDitOx-JeQ829A';
-const map = new mapboxgl.Map({
-    container: 'map', // container id
-    style: {
-        "version": 8,
-        "sources": {
-            "raster-tiles": {
-                "type": "raster",
-                "tiles": ["https://maptiles.meteoblue.com/styles/terrain-en/{z}/{x}/{y}.png"],
-                "tileSize": 256,
-            },
-
-        },
-        "layers": [
-            {
-                "id": "simple-tiles",
-                "type": "raster",
-                "source": "raster-tiles",
-                "minzoom": 0,
-                "maxzoom": 22
-            },
-        ]
-    },
-    center: [10, 51], // starting position [lng, lat]
-    zoom: 2, // starting zoom
-
-});
-
-*/
-
-//var language = new MapboxLanguage();
-//map.addControl(new mapboxgl.NavigationControl());
-
-var picture = "https://static.meteoblue.com/pub/satellite/{year}{month}{day}/{hour}{minute}/{z}/{x}/{y}@2x.jpg";
-
-var mbUrl = 'https://static.meteoblue.com/pub/satellite/SAT_COMPOSITE.json';
-
-
 export class Layer {
     constructor(url, map) {
         return fetch(url)
@@ -51,8 +11,6 @@ export class Layer {
                 let str2 = jsonFile["tiles"][0];
 
 
-                //Get timestamps
-                //let timestamps = [];
                 let years = [];
                 let months = [];
                 let days = [];
@@ -153,47 +111,93 @@ export class Layer {
                     });
                 }
 
+                function loadTiles3(filler, placeholder, urls) {
+                    for (let i = 0; i <= filler.length; i++) {
+                        urls[i + 1] = urls[i].replace(placeholder[i], filler[i]);
+                    }
+
+                    map.addSource("sat-tiles3", {
+                        "type": "raster",
+                        "tiles": [urls[5]],
+                        "tileSize": 512,
+                    });
+
+                    map.addLayer({
+                        "id": "sat-tiles3",
+                        "type": "raster",
+                        "source": "sat-tiles3",
+                        "minzoom": minZoom,
+                        "maxzoom": maxZoom,
+                    });
+                }
+
                 setInterval(function () {
 
                     currentImage = (currentImage + 1) % years.length;
 
                     let placeholders = ["{year}", "{month}", "{day}", "{hour}", "{minute}"];
                     let fillers = [years[currentImage], months[currentImage], days[currentImage], hours[currentImage], minutes[currentImage]];
-                    let nextFillers = [years[currentImage+1], months[currentImage+1], days[currentImage+1], hours[currentImage+1], minutes[currentImage+1]];
+                    let fillers2 = [years[currentImage+1], months[currentImage+1], days[currentImage+1], hours[currentImage+1], minutes[currentImage+1]];
+                    let fillers3 = [years[currentImage+2], months[currentImage+2], days[currentImage+2], hours[currentImage+2], minutes[currentImage+2]];
                     let url2 = "", url3 = "", url4 = "", url5 = "", url6 = "";
                     let urls = [str2, url2, url3, url4, url5, url6];
 
-
                     if (map.getLayer("sat-tiles")) {
-                        if (map.getLayer("sat-tiles2")) {
-                            map.moveLayer("sat-tiles2", "sat-tiles");
+                        console.log("1");
+                        if (map.getLayer("sat-tiles2") && map.getLayer("sat-tiles3")) {
+                            console.log(2);
                             map.removeLayer("sat-tiles").removeSource("sat-tiles");
-                            loadTiles(fillers, placeholders, urls);
-                            map.moveLayer("sat-tiles", "sat-tiles2");
-                            map.setLayoutProperty("sat-tiles2", 'visibility', 'none');
-                            if (map.getLayer("sat-tiles") && map.getLayer("sat-tiles2")) {
-                                map.removeLayer("sat-tiles2").removeSource("sat-tiles2");
-                                loadTiles2(nextFillers, placeholders, urls);
-                            } else {
-                                loadTiles2(nextFillers,placeholders,urls);
-                            }
+                        } else if(!map.getLayer("sat-tiles2")) {
+                            console.log(3);
+                            loadTiles2(fillers2,placeholders,urls);
+                            map.removeLayer("sat-tiles3").removeSource("sat-tiles3");
                         } else {
-                            loadTiles2(nextFillers, placeholders, urls);
+                            console.log(4);
+                            loadTiles3(fillers2,placeholders,urls);
                         }
                     } else {
-                       loadTiles(fillers, placeholders, urls);
-                       loadTiles2(nextFillers, placeholders, urls);
+                        if (map.getLayer("sat-tiles2") && map.getLayer("sat-tiles3")) {
+                            console.log(5);
+                            loadTiles(fillers2, placeholders, urls);
+                            map.removeLayer("sat-tiles2").removeSource("sat-tiles2");
+                        } else {
+                            console.log(6);
+                            loadTiles(fillers, placeholders, urls);
+                            loadTiles2(fillers2, placeholders, urls);
+                            loadTiles3(fillers3, placeholders, urls);
+                        }
                     }
 
+                        /*
+                        if (map.getLayer("sat-tiles")) {
+                            if (map.getLayer("sat-tiles2")) {
+                                map.on('style.load', function () {
+                                    map.moveLayer("sat-tiles2", "sat-tiles");
+                                    console.log("true3");
 
+                                });
+                                    map.removeLayer("sat-tiles").removeSource("sat-tiles");
+                                    loadTiles(fillers, placeholders, urls);
+                                map.on('style.load', function () {
+                                    map.moveLayer("sat-tiles", "sat-tiles2");
+                                    console.log("true3");
+
+                                });
+                                //map.setLayoutProperty("sat-tiles2", 'visibility', 'none');
+                                    map.removeLayer("sat-tiles2").removeSource("sat-tiles2");
+                                    loadTiles2(nextFillers, placeholders, urls);
+                            } else {
+                                loadTiles2(nextFillers, placeholders, urls);
+                            }
+                        } else {
+                           loadTiles(fillers, placeholders, urls);
+                           loadTiles2(nextFillers, placeholders, urls);
+                        }
+                        */
 
                 }, 1000);
-
-
-                return url5;
             }, function (reason) {
                 console.log(reason);
             });
     }
 }
-//getJson(mbUrl);

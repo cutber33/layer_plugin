@@ -52,11 +52,46 @@
 
     });
 
+    var url = 'https://static.meteoblue.com/pub/satellite/SAT_COMPOSITE.json';
+
+    fetch(url)
+        .then(function (response) {
+            return response.json();
+        })
+        .then(function (mbJson) {
+            let jsonFile = mbJson;
+
+            let first = jsonFile["time"]["first"];
+            let last = jsonFile["time"]["last"];
+            let interval = jsonFile["time"]["interval"];
+            let current = jsonFile["time"]["current"];
+
+            let timestamps = [];
+            for (var o = first; o <= last && (o-first)%interval==0; o=o+interval) {
+                timestamps.push(o);
+            }
+
+            console.log(timestamps);
+
+            const ts = new Timeslider({
+                first: first,
+                last: last,
+                current: current,
+                interval: interval,
+                onPickedTimestamp: (timestamp) =>  {
+                    console.log(timestamp, "hallo");
+                }
+            });
+
+            ts.onPickedTs = (timestamp) =>  {
+                console.log(timestamp, "hallo2");
+            }
+
+        }, function(reason) {
+            console.log(reason);
+        });
 
 
-    var mbUrl = 'https://static.meteoblue.com/pub/satellite/SAT_COMPOSITE.json';
-
-    const ts = new Timeslider(map, mbUrl);
     //const layer = new Layer(mbUrl, map);
 
 </script>

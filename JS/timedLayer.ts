@@ -2,13 +2,17 @@
  * Created by johann on 08.07.19.
  */
 
-export class Layer {
+export class TimedLayer {
   url: any;
   geo: any;
   map: any;
   minzoom: any;
   maxzoom: any;
   bound: any;
+  first: number;
+  last: number;
+  interval: number;
+  public onLoad: () => void;
   constructor(pUrl, pMap) {
     this.url = pUrl;
     this.map = pMap;
@@ -35,13 +39,16 @@ export class Layer {
           //Get the tiles
           let str2 = jsonFile["tiles"][0];
 
-          let first = jsonFile["time"]["first"];
-          let last = jsonFile["time"]["last"];
-          let interval = jsonFile["time"]["interval"];
+          self.first = jsonFile["time"]["first"];
+          self.last = jsonFile["time"]["last"];
+          self.interval = jsonFile["time"]["interval"];
+          let attribution = jsonFile["attribution"];
+
+          self.onLoad();
 
           let date = new Date(newTimestamp * 1000);
-          let date2 = new Date((newTimestamp + interval) * 1000);
-          let date3 = new Date((newTimestamp + 2 * interval) * 1000);
+          let date2 = new Date((newTimestamp + self.interval) * 1000);
+          let date3 = new Date((newTimestamp + 2 * self.interval) * 1000);
           let dates = [date, date2, date3];
 
           let years = [];
@@ -218,14 +225,14 @@ export class Layer {
 
             console.log(
               previousTimestamp != null &&
-                newTimestamp != previousTimestamp + interval
+                newTimestamp != previousTimestamp + self.interval
             );
 
             //TODO: https://gis.stackexchange.com/questions/240134/mapbox-gl-js-source-loaded-event
 
             if (
               previousTimestamp != null &&
-              newTimestamp != previousTimestamp + interval
+              newTimestamp != previousTimestamp + self.interval
             ) {
               if (self.map.getLayer("sat-tiles")) {
                 self.map.removeLayer("sat-tiles").removeSource("sat-tiles");
@@ -309,5 +316,17 @@ export class Layer {
         
     }
     */
+  }
+
+  public getFirst() {
+    return this.first;
+  }
+
+  public getLast() {
+    return this.last;
+  }
+
+  public getInterval() {
+    return this.interval;
   }
 }

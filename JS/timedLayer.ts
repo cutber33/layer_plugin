@@ -35,7 +35,7 @@ export class TimedLayer {
         self.interval = jsonFile["time"]["interval"];
         self.attribution = jsonFile["attribution"];
         self.minZoom = jsonFile["minzoom"];
-        self.maxZoom = jsonFile["maxzoom"];
+        self.maxZoom = jsonFile["maxzoom"] + 1;
         self.bounds = jsonFile["bounds"];
 
         self.map.setZoom(self.minZoom);
@@ -49,7 +49,6 @@ export class TimedLayer {
         let maxBounds = [boundsSW, boundsNE];
         self.map.setMaxBounds(maxBounds);
 
-        console.log("onload");
         self.onLoad();
       });
   }
@@ -115,33 +114,6 @@ export class TimedLayer {
       minutes.push(m);
     }
 
-    //Replace the date placeholders with the real date
-
-    //console.log(urls[5]);
-
-    //set Map Zoom Settin
-
-    /*
-          let minZoom = jsonFile["minzoom"];
-          let maxZoom = jsonFile["maxzoom"];
-          let bounds = jsonFile["bounds"];
-          */
-
-    /*
-    if (previousTimestamp == null) {
-      self.map.setZoom(self.minZoom);
-      self.map.setMinZoom(self.minZoom);
-      self.map.setMaxZoom(self.maxZoom);
-
-      //set bounds
-
-      let boundsSW = [self.bounds[0], self.bounds[1]];
-      let boundsNE = [self.bounds[2], self.bounds[3]];
-      let maxBounds = [boundsSW, boundsNE];
-      self.map.setMaxBounds(maxBounds);
-    }
-    */
-
     let placeholders = ["{year}", "{month}", "{day}", "{hour}", "{minute}"];
     let fillers: String[] = [
       years[0],
@@ -179,15 +151,16 @@ export class TimedLayer {
       self.map.addSource("sat-tiles", {
         type: "raster",
         tiles: [urls[5]],
-        tileSize: 512
+        tileSize: 512,
+        maxzoom: self.maxZoom
       });
 
       self.map.addLayer({
         id: "sat-tiles",
         type: "raster",
         source: "sat-tiles",
-        minzoom: self.minZoom,
-        maxzoom: self.maxZoom
+        minzoom: self.minZoom
+        //maxzoom: self.maxZoom
       });
     }
 
@@ -199,15 +172,16 @@ export class TimedLayer {
       self.map.addSource("sat-tiles2", {
         type: "raster",
         tiles: [urls[5]],
-        tileSize: 512
+        tileSize: 512,
+        maxzoom: self.maxZoom
       });
 
       self.map.addLayer({
         id: "sat-tiles2",
         type: "raster",
         source: "sat-tiles2",
-        minzoom: self.minZoom,
-        maxzoom: self.maxZoom
+        minzoom: self.minZoom
+        //maxzoom: self.maxZoom
       });
     }
 
@@ -219,15 +193,16 @@ export class TimedLayer {
       self.map.addSource("sat-tiles3", {
         type: "raster",
         tiles: [urls[5]],
-        tileSize: 512
+        tileSize: 512,
+        maxzoom: self.maxZoom
       });
 
       self.map.addLayer({
         id: "sat-tiles3",
         type: "raster",
         source: "sat-tiles3",
-        minzoom: self.minZoom,
-        maxzoom: self.maxZoom
+        minzoom: self.minZoom
+        //maxzoom: self.maxZoom
       });
     }
 
@@ -259,19 +234,15 @@ export class TimedLayer {
       */
 
       if (self.map.getLayer("sat-tiles")) {
-        console.log("1");
         if (
           self.map.getLayer("sat-tiles2") &&
           self.map.getLayer("sat-tiles3")
         ) {
-          console.log(2);
           self.map.removeLayer("sat-tiles").removeSource("sat-tiles");
         } else if (!self.map.getLayer("sat-tiles2")) {
-          console.log(3);
           loadTiles2(fillers2, placeholders, urls);
           self.map.removeLayer("sat-tiles3").removeSource("sat-tiles3");
         } else {
-          console.log(4);
           loadTiles3(fillers2, placeholders, urls);
           self.map.removeLayer("sat-tiles").removeSource("sat-tiles");
           //try removing Layer 1 here so that there is no delay
@@ -281,15 +252,12 @@ export class TimedLayer {
           self.map.getLayer("sat-tiles2") &&
           self.map.getLayer("sat-tiles3")
         ) {
-          console.log(5);
           loadTiles(fillers2, placeholders, urls);
           self.map.removeLayer("sat-tiles2").removeSource("sat-tiles2");
         } else {
-          console.log(6);
           loadTiles3(fillers3, placeholders, urls);
           loadTiles2(fillers2, placeholders, urls);
           loadTiles(fillers, placeholders, urls);
-          console.log(fillers, fillers2, fillers3);
         }
       }
     }

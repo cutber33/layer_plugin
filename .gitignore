@@ -1,4 +1,3 @@
 node_modules
-/build/compiled
 /meteoblue-webmap-plugin.d.ts
 /meteoblue-webmap-plugin.min.js

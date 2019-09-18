@@ -1,9 +1,9 @@
 {
-  "name": "layer-plugin",
+  "name": "timedlayer-plugin",
   "version": "0.0.1",
-  "description": "plugin to layer satellite and radar data over given maps",
-  "main": "layer-plugin.min.js",
-  "types": "layer-plugin.d.ts",
+  "description": "plugin to layer satellite and radar data (with Tile-JSON) over given maps",
+  "main": "timedLayer.js",
+  "types": "timedLayer.d.ts",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "mapbox-gl": "^1.0.0",
-    "npm": "^6.10.1"
+    "npm": "^6.10.1",
+    "timeslider-plugin": "0.0.1"
   },
   "devDependencies": {
     "@types/node": "^12.6.2",

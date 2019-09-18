@@ -1,6 +1,6 @@
 {
   "name": "timedlayer-plugin",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "plugin to layer satellite and radar data (with Tile-JSON) over given maps",
   "main": "build/compiled/timedLayer.js",
   "types": "build/compiled/timedLayer.d.ts",

@@ -1,3 +1,5 @@
 node_modules
 /meteoblue-webmap-plugin.d.ts
 /meteoblue-webmap-plugin.min.js
+.idea
+.DS_Store
